@@ -24,17 +24,17 @@ namespace Scripts.TIM
         /*-*/
         /*
 Taleden's Inventory Manager - Updated (Unofficial)
-version 1.7.7 (2019-03-07)
+version 1.8.1 (2021-04-12)
 
 Unoffical maintained version of TIM.
 
-Steam Workshop: http://steamcommunity.com/sharedfiles/filedetails/?id=1268188438
+Steam Workshop: http://steamcommunity.com/sharedfiles/filedetails/
 User's Guide:   http://steamcommunity.com/sharedfiles/filedetails/?id=546909551
 
 Source code:
     Since this script is minimised to reduce size and get round PB limits, you won't be able
     to edit this script directly. To view the source code, and possibly give contributions,
-    please head to https://github.com/Gorea235/TaledensInvManagerUpdated
+    please head to https://github.com/Spacebuilder2020/TaledensInvManagerUpdated
 
 *******************
 BASIC CONFIGURATION
@@ -44,7 +44,7 @@ update, and the maximum load of each call before deferring execution to the next
 */
         // whether to use real time (second between calls) or pure UpdateFrequency
         // for update frequency
-        readonly bool USE_REAL_TIME = false;
+        readonly bool USE_REAL_TIME = true;
 
         // how often the script should update
         //     UpdateFrequency.None      - No automatic updating (manual only)
@@ -53,15 +53,21 @@ update, and the maximum load of each call before deferring execution to the next
         //     UpdateFrequency.Update10  - update every 10 ticks
         //     UpdateFrequency.Update100 - update every 100 ticks
         // (if USE_REAL_TIME == true, this is ignored)
-        const UpdateFrequency UPDATE_FREQUENCY = UpdateFrequency.Update100;
+        const UpdateFrequency UPDATE_FREQUENCY = UpdateFrequency.Update10;
 
         // How often the script should update in milliseconds
         // (if USE_REAL_TIME == false, this is ignored)
-        const int UPDATE_REAL_TIME = 1000;
+        const int UPDATE_REAL_TIME = 250;
+
+        // How less will the script one if a player is not in a seat. Ignored if USE_REAL_TIME is false.
+        const int SLOW_DOWN_RATE = 4;
+
+        // How many cycles should we skip at first run before starting the program
+        const int CYCLES_TO_SKIP = 20;
 
         // The maximum run time of the script per call.
         // Measured in milliseconds.
-        const double MAX_RUN_TIME = 35;
+        const double MAX_RUN_TIME = 15;
 
         // The maximum percent load that this script will allow
         // regardless of how long it has been executing.
@@ -82,33 +88,53 @@ that any changes will be reverted when you update the script from the workshop.
         // the game, some from the community workshop).
         const string DEFAULT_ITEMS = @"
 AmmoMagazine/
-/Missile200mm
-/NATO_25x184mm,,,,NATO_25x184mmMagazine
-/NATO_5p56x45mm,,,,NATO_5p56x45mmMagazine
+/Missile200mm,,,,POMissile200mm
+/NATO_25x184mm,,,,PONATO_25x184mmMagazine
+/NATO_5p56x45mm,,,,PONATO_5p56x45mmMagazine
 
 Component/
-/BulletproofGlass,50,2%
-/Computer,30,5%,,ComputerComponent
-/Construction,150,20%,,ConstructionComponent
-/Detector,10,0.1%,,DetectorComponent
-/Display,10,0.5%
-/Explosives,5,0.1%,,ExplosivesComponent
-/Girder,10,0.5%,,GirderComponent
-/GravityGenerator,1,0.1%,GravityGen,GravityGeneratorComponent
-/InteriorPlate,100,10%
-/LargeTube,10,2%
-/Medical,15,0.1%,,MedicalComponent
-/MetalGrid,20,2%
-/Motor,20,4%,,MotorComponent
-/PowerCell,20,1%
-/RadioCommunication,10,0.5%,RadioComm,RadioCommunicationComponent
-/Reactor,25,2%,,ReactorComponent
-/SmallTube,50,3%
-/SolarCell,20,0.1%
-/SteelPlate,150,40%
-/Superconductor,10,1%
-/Thrust,15,5%,,ThrustComponent
-/Canvas,5,0.01%
+/BulletproofGlass,50,2%,,POBulletproofGlass
+/Computer,30,5%,,POComputerComponent
+/Construction,150,20%,,POConstructionComponent
+/Detector,10,0.1%,,PODetectorComponent
+/Display,10,0.5%,,PODisplay
+/Explosives,5,0.1%,,POExplosivesComponent
+/Girder,10,0.5%,,POGirderComponent
+/GravityGenerator,1,0.1%,GravityGen,POGravityGeneratorComponent
+/InteriorPlate,100,10%,,POInteriorPlate
+/LargeTube,10,2%,,POLargeTube
+/Medical,15,0.1%,,POMedicalComponent
+/MetalGrid,20,2%,,POMetalGrid
+/Motor,20,4%,,POMotorComponent
+/PowerCell,20,1%,,POPowerCell
+/RadioCommunication,10,0.5%,RadioComm,PORadioCommunicationComponent
+/Reactor,25,2%,,POReactorComponent
+/SmallTube,50,3%,,POSmallTube
+/SolarCell,20,0.1%,,POSolarCell
+/SteelPlate,150,40%,,POSteelPlate
+/Superconductor,10,1%,,POSuperconductor
+/Thrust,15,5%,,POThrustComponent
+/Canvas,5,0.01%,,POCanvas
+/CopperWire,30,40%
+/GoldWire,30,40%
+/Fabric,10,5%
+/Rubber,10,5%
+/Plastic,100,5%,,PolymerToPlastic
+/AdvancedComputer,10,5%
+/QuantumComputer,10,5%
+/Concrete,50,0.01%
+/TitaniumPlate,150,40%
+/ArmoredPlate,50,40%
+/Lightbulb,10,5%
+/AlkalinePowerCell,10,5%
+/AcidPowerCell,10,5%
+/Ceramic,50,0.01%
+/Thermocouple,10,5%
+/Asphalt,10,5%
+/HeatingElement,10,5%
+/LaserEmitter,10,5%
+/ArmorGlass,50,2%
+/Electromagnet,30,40%
 
 GasContainerObject/
 /HydrogenBottle
@@ -117,27 +143,55 @@ Ingot/
 /Cobalt,50,3.5%
 /Gold,5,0.2%
 /Iron,200,88%
-/Magnesium,5,0.1%
+/Magnesium,5,0.1%,,Gunpowder
 /Nickel,30,1.5%
 /Platinum,5,0.1%
 /Silicon,50,2%
 /Silver,20,1%
 /Stone,50,2.5%
 /Uranium,1,0.1%
+/Polymer,50,10%
+/Aluminum,200,88%
+/Copper,200,88%
+/Titanium,200,88%
+/Lithium,200,88%
 
 Ore/
+/CrushedCobalt
+/PurifiedCobalt
 /Cobalt
+/CrushedGold
+/PurifiedGold
 /Gold
 /Ice
+/CrushedIron
+/PurifiedIron
 /Iron
-/Magnesium
+/CrushedNiter
+/PurifiedNiter
+/Niter
+/CrushedNickel
+/PurifiedNickel
 /Nickel
+/CrushedPlatinum
+/PurifiedPlatinum
 /Platinum
 /Scrap
+/CrushedSilicon
+/PurifiedSilicon
 /Silicon
+/CrushedSilver
+/PurifiedSilver
 /Silver
 /Stone
+/CrushedUranium
+/PurifiedUranium
 /Uranium
+/Oil-Sand
+/CrudeOil,50,10%
+/CrushedBauxite
+/PurifiedBauxite
+/Bauxite
 
 OxygenContainerObject/
 /OxygenBottle
@@ -178,7 +232,11 @@ PhysicalGunObject/
             {"PORPHYRY", "GOLD"}, {"SPERRYLITE", "PLATINUM"}, {"NIGGLIITE", "PLATINUM"}, {"GALENA", "SILVER"}, {"CHLORARGYRITE", "SILVER"},
             {"COOPERITE", "PLATINUM"}, {"PETZITE", "SILVER"}, {"HAPKEITE", "SILICON"}, {"DOLOMITE", "MAGNESIUM"}, {"SINOITE", "SILICON"},
             {"OLIVINE", "MAGNESIUM"}, {"QUARTZ", "SILICON"}, {"AKIMOTOITE", "MAGNESIUM"}, {"WADSLEYITE", "MAGNESIUM"}, {"CARNOTITE", "URANIUM"},
-            {"AUTUNITE", "URANIUM"}, {"URANIAURITE", "GOLD"}
+            {"AUTUNITE", "URANIUM"}, {"URANIAURITE", "GOLD"},
+
+            // Industrial Overhaul
+            {"BAUXITE", "ALUMINUM"},
+            {"CRUDEOIL", "POLYMER"}
         };
 
         // Block types/subtypes which restrict item types/subtypes from their first
@@ -214,11 +272,11 @@ PhysicalGunObject/
         #region Version
 
         // current script version
-        const int VERSION_MAJOR = 1, VERSION_MINOR = 7, VERSION_REVISION = 7;
+        const int VERSION_MAJOR = 1, VERSION_MINOR = 8, VERSION_REVISION = 1;
         /// <summary>
         /// Current script update time.
         /// </summary>
-        const string VERSION_UPDATE = "2019-04-07";
+        const string VERSION_UPDATE = "2021-04-12";
         /// <summary>
         /// A formatted string of the script version.
         /// </summary>
@@ -370,6 +428,7 @@ PhysicalGunObject/
         static Dictionary<string, List<string>> subTypes = new Dictionary<string, List<string>>();
         static Dictionary<string, Dictionary<string, InventoryItemData>> typeSubData = new Dictionary<string, Dictionary<string, InventoryItemData>>();
         static Dictionary<MyDefinitionId, ItemId> blueprintItem = new Dictionary<MyDefinitionId, ItemId>();
+        static Dictionary<uint, ItemId> typeXRef = new Dictionary<uint, ItemId>(); 
 
         #endregion
 
@@ -389,6 +448,13 @@ PhysicalGunObject/
         /// when the script should next update
         /// </summary>
         DateTime currentCycleStartTime;
+
+        DateTime currentExecutionStartTime;
+
+        /// <summary>
+        /// How many cycles left to skip before we can continue processing
+        /// </summary>
+        int cyclesToSkip = CYCLES_TO_SKIP;
         /// <summary>
         /// The time to wait before starting the next cycle.
         /// Only used if <see cref="USE_REAL_TIME"/> is <c>true</c>.
@@ -438,6 +504,17 @@ PhysicalGunObject/
         StringBuilder echoOutput = new StringBuilder();
 
         /// <summary>
+        /// Stores the total run time in ms
+        /// </summary>
+        double totalRunTime = 0;
+
+        /// <summary>
+        /// Stores the number of executions since start
+        /// </summary>
+        double totalExecutionCount = 0;
+       
+
+        /// <summary>
         /// The set of all docked grid (including the current one).
         /// </summary>
         HashSet<IMyCubeGrid> dockedgrids = new HashSet<IMyCubeGrid>();
@@ -480,9 +557,14 @@ PhysicalGunObject/
         /// The length of time we have been executing for.
         /// Measured in milliseconds.
         /// </summary>
-        int ExecutionTime
+        double ExecutionTime
         {
-            get { return (int)((DateTime.Now - currentCycleStartTime).TotalMilliseconds + 0.5); }
+            get { return ((DateTime.Now - currentExecutionStartTime).TotalMilliseconds); }
+        }
+
+        double AverageExecutionTime
+        {
+            get { return totalRunTime / totalExecutionCount; }
         }
 
         /// <summary>
@@ -617,7 +699,9 @@ PhysicalGunObject/
                     subTypes[itemSubType].Add(itemType);
                     typeSubData[itemType][itemSubType] = new InventoryItemData(itemSubType, minimum, ratio, label == "" ? isublabel : label, blueprint == "" ? isublabel : blueprint);
                     if (blueprint != null)
+                    {
                         blueprintItem[typeSubData[itemType][itemSubType].blueprint] = new ItemId(itemType, itemSubType);
+                    }
                 }
             }
 
@@ -649,7 +733,7 @@ PhysicalGunObject/
             {
                 echoOutput.AppendLine(log);
                 Echo(log);
-            };
+            };            
 
             // initialise the process steps we will need to do
             processSteps = new Action[]
@@ -706,22 +790,62 @@ PhysicalGunObject/
 
         public void Main(string argument)
         {
+            currentExecutionStartTime = DateTime.Now;
+            totalExecutionCount++;
+
             // init call
             // do update frequency check
             if (USE_REAL_TIME)
             {
                 DateTime n = DateTime.Now;
-                if (n - currentCycleStartTime >= cycleUpdateWaitTime)
+                if (n - currentCycleStartTime >= cycleUpdateWaitTime )
                     currentCycleStartTime = n;
                 else
                 {
-                    Echo(echoOutput.ToString()); // ensure that output is not lost
+                    Echo(echoOutput.ToString()); // ensure that output is not lost                    
+                    totalRunTime += ExecutionTime;
+                    Echo(string.Format("Average Execution Time: {0}ms", AverageExecutionTime));
                     return;
                 }
             }
             else
                 currentCycleStartTime = DateTime.Now;
+
+            //Skip N cycles at start.  This is to prevent overheating due to the average runtime being too high!
+            if (cyclesToSkip > 0)
+            {
+                cyclesToSkip--;
+                Echo(echoOutput.ToString()); // ensure that output is not lost                    
+                totalRunTime += ExecutionTime;
+                Echo(string.Format("Average Execution Time: {0}ms", AverageExecutionTime));
+                return;
+            }
+
             echoOutput.Clear();
+
+            // Slow Execution of TIM if a player is not sitting in a seat
+            if (USE_REAL_TIME)
+            {
+                var myShipControllers = new List<IMyShipController>();
+                GridTerminalSystem.GetBlocksOfType<IMyShipController>(myShipControllers);
+                bool slowRun = true;
+                foreach (var controller in myShipControllers)
+                {
+                    if (controller.IsUnderControl)
+                    {
+                        slowRun = false;
+                        break;
+                    }
+                }
+                if (slowRun)
+                {
+                    var waitTime = UPDATE_REAL_TIME * SLOW_DOWN_RATE;
+                    cycleUpdateWaitTime = new TimeSpan(0, 0, 0, 0, waitTime);
+                    EchoR("Execution is running at a rate of " + waitTime/1000 + "s instead  of " + UPDATE_REAL_TIME/1000 + "s because player is not in a seat!");
+                }
+
+            }
+
             int processStepTmp = processStep;
             bool didAtLeastOneProcess = false;
 
@@ -729,8 +853,11 @@ PhysicalGunObject/
             EchoR(string.Format(timUpdateText, ++totalCallCount, currentCycleStartTime.ToString("h:mm:ss tt")));
 
             // reset status and debugging data every cycle
-            debugText.Clear();
-            debugLogic.Clear();
+            if (processStep == 0)
+            {
+                debugText.Clear();
+                debugLogic.Clear();
+            }
             numberTransfers = numberRefineres = numberAssemblers = 0;
 
             try
@@ -774,12 +901,16 @@ PhysicalGunObject/
             // update script status and debug panels on every cycle step
             string msg, stepText;
             int theoryProcessStep = processStep == 0 ? 13 : processStep;
-            int exTime = ExecutionTime;
+            double exTime = ExecutionTime;
+            totalRunTime += exTime;
+            double aTime = AverageExecutionTime;
+            currentExecutionStartTime = DateTime.Now;
             double exLoad = Math.Round(100.0f * ExecutionLoad, 1);
             int unused;
             statsLog[totalCallCount % statsLog.Length] = ScreenFormatter.Format("" + totalCallCount, 80, out unused, 1) +
                                                          ScreenFormatter.Format((processStep == 0 ? processSteps.Length : processStep) + " / " + processSteps.Length, 125 + unused, out unused, 1, true) +
                                                          ScreenFormatter.Format(exTime + " ms", 145 + unused, out unused, 1) +
+                                                         ScreenFormatter.Format(aTime + " ms", 145 + unused, out unused, 1) +
                                                          ScreenFormatter.Format(exLoad + "%", 105 + unused, out unused, 1, true) +
                                                          ScreenFormatter.Format("" + numberTransfers, 65 + unused, out unused, 1, true) +
                                                          ScreenFormatter.Format("" + numberRefineres, 65 + unused, out unused, 1, true) +
@@ -795,6 +926,8 @@ PhysicalGunObject/
                 stepText = string.Format("steps {0} to {1}", processStepTmp, theoryProcessStep - 1);
             EchoR(msg = string.Format("Completed {0} in {1}ms, {2}% load ({3} instructions)",
                 stepText, exTime, exLoad, Runtime.CurrentInstructionCount));
+            Echo(msg = string.Format("Average Execution Time: {0}ms",
+                aTime));
             debugText.Add(msg);
             UpdateStatusPanels();
         }
@@ -811,7 +944,7 @@ PhysicalGunObject/
             foreach (string line in data.Split(NEWLINE, REE))
             {
                 string[] words = (line.Trim() + ",,,,").Split(SPACECOMMA, 6);
-                words[0] = words[0].Trim();
+                words[0] = words[0].Trim().Replace('-',' ');
                 if (words[0].EndsWith("/"))
                 {
                     itype = words[0].Substring(0, words[0].Length - 1);
@@ -947,6 +1080,7 @@ PhysicalGunObject/
                         else
                             throw new ArgumentException(string.Format("Invalid 'debug=' type '{0}': must be 'quotas', 'sorting', 'refineries', or 'assemblers'",
                                     value));
+                        debugText.Add(debugLogic.ToString());
                         break;
                     case "":
                     case "tim_version":
@@ -1210,7 +1344,7 @@ PhysicalGunObject/
         /// <returns>True.</returns>
         /// <remarks>This methods returns true by default to allow use in the while check.</remarks>
         bool DoExecutionLimitCheck()
-        {
+        {            
             if (ExecutionTime > MAX_RUN_TIME || ExecutionLoad > MAX_LOAD)
                 throw new PutOffExecutionException();
             return true;
@@ -1512,6 +1646,11 @@ PhysicalGunObject/
                         // don't touch input of enabled and active assemblers
                         invenLocked.Add(block.GetInventory((block as IMyAssembler).Mode == MyAssemblerMode.Disassembly ? 1 : 0));
                     }
+                    else if (block is IMyLargeTurretBase & !blockTag.ContainsKey(block))
+                    {
+                        // don't touch input of unmanaged turrents
+                        invenLocked.Add(block.GetInventory(0));
+                    } 
                 }
 
                 i = block.InventoryCount;
@@ -1532,6 +1671,11 @@ PhysicalGunObject/
                         InventoryItemData.InitItem(itype, isub, 0L, 0.0f, stacks[s].Type.SubtypeId, null);
                         itype = itype.ToUpper();
                         isub = isub.ToUpper();
+                        if (!typeXRef.ContainsKey(stacks[s].ItemId))
+                        {
+                            typeXRef.Add(stacks[s].ItemId, new ItemId(itype, isub));
+                        }
+                        
 
                         // update amounts
                         amount = (long)((double)stacks[s].Amount * 1e6);
@@ -1953,11 +2097,17 @@ PhysicalGunObject/
                             HashSet<string> ores, autoores = blkRfn == null | fields.Length > 1 ? new HashSet<string>() : GetBlockAcceptedSubs(blkRfn, "ORE");
                             HashSet<ItemId> items, autoitems = new HashSet<ItemId>();
                             i = 0;
+                            bool negate = false;
                             while (++i < fields.Length)
                             {
+                                if (fields[i] == "-")
+                                {
+                                    negate = true;
+                                    name.Append(":-");
+                                }
                                 if (ParseItemTypeSub(null, true, fields[i], blkRfn != null ? "ORE" : "", out itype, out isub) & blkRfn != null == (itype == "ORE") & (blkRfn != null | itype != "INGOT"))
                                 {
-                                    if (isub == "")
+                                    if (negate || isub == "")
                                     {
                                         if (blkRfn != null)
                                         {
@@ -1974,11 +2124,25 @@ PhysicalGunObject/
                                     {
                                         if (blkRfn != null)
                                         {
-                                            autoores.Add(isub);
+                                            if (negate)
+                                            {
+                                                autoores.Remove(isub);
+                                            }
+                                            else
+                                            {
+                                                autoores.Add(isub);
+                                            }
                                         }
                                         else
                                         {
-                                            autoitems.Add(new ItemId(itype, isub));
+                                            if (negate)
+                                            {
+                                                autoitems.Remove(new ItemId(itype, isub));
+                                            }
+                                            else
+                                            {
+                                                autoitems.Add(new ItemId(itype, isub));
+                                            }
                                         }
                                         name.Append(":" + (blkRfn == null & subTypes[isub].Count > 1 ? typeLabel[itype] + "/" : "") + subLabel[isub]);
                                     }
@@ -1995,6 +2159,7 @@ PhysicalGunObject/
                                     (refineryOres.TryGetValue(blkRfn, out ores) ? ores : refineryOres[blkRfn] = new HashSet<string>()).UnionWith(autoores);
                             }
                             else if (blkAsm.Enabled)
+                                //TODO: Exclude items that can't be crafted by assembler
                                 (assemblerItems.TryGetValue(blkAsm, out items) ? items : assemblerItems[blkAsm] = new HashSet<ItemId>()).UnionWith(autoitems);
                             name.Append(" ");
                         }
@@ -2689,6 +2854,31 @@ PhysicalGunObject/
                         if (typeSubs.ContainsKey(item.type) & subTypes.ContainsKey(item.subType))
                             typeSubData[item.type][item.subType].producers.Add(blk);
                         producerWork[blk] = new ProducerWork(item, (double)queue[0].Amount - blk.CurrentProgress);
+                    } else
+                    {
+                        /*
+                        //New Blueprint, lets learn it!                        
+                        
+                        item = typeXRef[queue[0].ItemId];
+                        var data = typeSubData[item.type][item.subType];
+
+                        if (data.blueprint != null)
+                        {
+                            debugText.Add("Overwriting Existing blueprint: " + data.blueprint.SubtypeName + " with " + queue[0].BlueprintId.SubtypeName);
+                        } else
+                        {
+                            debugText.Add("New Blueprint: " + queue[0].BlueprintId.SubtypeName);
+                        }
+                        data.blueprint = queue[0].BlueprintId;
+                        blueprintItem.Add(data.blueprint, item);
+                        if (data.minimum == 0)
+                        {
+                            data.minimum = 50;
+                            data.ratio = 0.05f;
+                            EchoR(item.subType);
+                            throw new Exception("Die");
+                        }*/
+                        
                     }
                 }
             }
@@ -2778,6 +2968,8 @@ PhysicalGunObject/
             }
 
             // skip refinery:ore assignment if there are no ores or ready refineries
+
+            var fixed_1 = new VRage.MyFixedPoint();
             if (ores.Count > 0 & refineries.Count > 0)
             {
                 ores.Sort((o1, o2) =>
@@ -2794,10 +2986,23 @@ PhysicalGunObject/
                     level = int.MaxValue;
                     foreach (string isubOre in ores)
                     {
-                        if ((isub == "" | oreLevel[isubOre] < level) & refineryOres[rfn].Contains(isubOre))
+                        MyItemType type;
+                        try
                         {
-                            isub = isubOre;
-                            level = oreLevel[isub];
+                            type = MyItemType.MakeOre(isubOre);
+                            if ((isub == "" | oreLevel[isubOre] < level) & refineryOres[rfn].Contains(isubOre))
+                            {                                
+                                if (rfn.InputInventory.CanItemsBeAdded(fixed_1, type))
+                                {
+                                    isub = isubOre;
+                                    level = oreLevel[isub];
+                                } else
+                                {
+                                    if (debug) debugText.Add(rfn.CustomName + " can't hold " + isubOre);
+                                }
+                            }
+                        } catch (Exception) {
+                            debugText.Add("Unable to parse item!");
                         }
                     }
                     if (isub != "")
@@ -2937,7 +3142,7 @@ PhysicalGunObject/
                     level = int.MaxValue;
                     foreach (ItemId i in items)
                     {
-                        if (itemLevel[i] < Math.Min(level, itemPar[i]) & assemblerItems[asm].Contains(i) & typeSubData[i.type][i.subType].hold < 1)
+                        if (itemLevel[i] < Math.Min(level, itemPar[i]) & assemblerItems[asm].Contains(i) & typeSubData[i.type][i.subType].hold < 1 && asm.CanUseBlueprint(typeSubData[i.type][i.subType].blueprint))
                         {
                             item = i;
                             level = itemLevel[i];
@@ -2951,11 +3156,18 @@ PhysicalGunObject/
                         asm.Repeating = false;
                         asm.Mode = MyAssemblerMode.Assembly;
                         data = typeSubData[item.type][item.subType];
-                        speed = data.prdSpeed.TryGetValue("" + asm.BlockDefinition, out speed) ? speed : 1.0;
-                        amount = Math.Max((int)(10 * speed), 10);
-                        asm.AddQueueItem(data.blueprint, (double)amount);
-                        itemLevel[item] += (int)Math.Ceiling(1e8 * amount / data.quota);
-                        if (debug) debugText.Add("  " + asm.CustomName + " assigned " + amount + "x " + subLabel[item.subType] + " (L=" + itemLevel[item] + "%)");
+                        if (asm.CanUseBlueprint(data.blueprint))
+                        {
+                            speed = data.prdSpeed.TryGetValue("" + asm.BlockDefinition, out speed) ? speed : 1.0;
+                            amount = Math.Max((int)(10 * speed), 10);
+                            asm.AddQueueItem(data.blueprint, (double)amount);
+                            itemLevel[item] += (int)Math.Ceiling(1e8 * amount / data.quota);
+                            if (debug) debugText.Add("  " + asm.CustomName + " assigned " + amount + "x " + subLabel[item.subType] + " (L=" + itemLevel[item] + "%)");
+                        } 
+                        else if (debug)
+                        {
+                            debugText.Add(" " + asm.CustomName + " can't use blueprint: " + data.blueprint);
+                        }
                     }
                     else if (debug) debugText.Add("  " + asm.CustomName + " unassigned, nothing to do");
                 }
