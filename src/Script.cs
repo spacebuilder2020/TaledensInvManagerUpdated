@@ -88,110 +88,61 @@ that any changes will be reverted when you update the script from the workshop.
         // the game, some from the community workshop).
         const string DEFAULT_ITEMS = @"
 AmmoMagazine/
-/Missile200mm,,,,POMissile200mm
-/NATO_25x184mm,,,,PONATO_25x184mmMagazine
-/NATO_5p56x45mm,,,,PONATO_5p56x45mmMagazine
+/Missile200mm
+/NATO_25x184mm,,,,NATO_25x184mmMagazine
+/NATO_5p56x45mm,,,,NATO_5p56x45mmMagazine
 
 Component/
-/BulletproofGlass,50,2%,,POBulletproofGlass
-/Computer,30,5%,,POComputerComponent
-/Construction,150,20%,,POConstructionComponent
-/Detector,10,0.1%,,PODetectorComponent
-/Display,10,0.5%,,PODisplay
-/Explosives,5,0.1%,,POExplosivesComponent
-/Girder,10,0.5%,,POGirderComponent
-/GravityGenerator,1,0.1%,GravityGen,POGravityGeneratorComponent
-/InteriorPlate,100,10%,,POInteriorPlate
-/LargeTube,10,2%,,POLargeTube
-/Medical,15,0.1%,,POMedicalComponent
-/MetalGrid,20,2%,,POMetalGrid
-/Motor,20,4%,,POMotorComponent
-/PowerCell,20,1%,,POPowerCell
-/RadioCommunication,10,0.5%,RadioComm,PORadioCommunicationComponent
-/Reactor,25,2%,,POReactorComponent
-/SmallTube,50,3%,,POSmallTube
-/SolarCell,20,0.1%,,POSolarCell
-/SteelPlate,150,40%,,POSteelPlate
-/Superconductor,10,1%,,POSuperconductor
-/Thrust,15,5%,,POThrustComponent
-/Canvas,5,0.01%,,POCanvas
-/CopperWire,30,40%
-/GoldWire,30,40%
-/Fabric,10,5%
-/Rubber,10,5%
-/Plastic,100,5%,,PolymerToPlastic
-/AdvancedComputer,10,5%
-/QuantumComputer,10,5%
-/Concrete,50,0.01%
-/TitaniumPlate,150,40%
-/ArmoredPlate,50,40%
-/Lightbulb,10,5%
-/AlkalinePowerCell,10,5%
-/AcidPowerCell,10,5%
-/Ceramic,50,0.01%
-/Thermocouple,10,5%
-/Asphalt,10,5%
-/HeatingElement,10,5%
-/LaserEmitter,10,5%
-/ArmorGlass,50,2%
-/Electromagnet,30,40%
+/BulletproofGlass,50,2%
+/Computer,30,5%,,ComputerComponent
+/Construction,150,20%,,ConstructionComponent
+/Detector,10,0.1%,,DetectorComponent
+/Display,10,0.5%
+/Explosives,5,0.1%,,ExplosivesComponent
+/Girder,10,0.5%,,GirderComponent
+/GravityGenerator,1,0.1%,GravityGen,GravityGeneratorComponent
+/InteriorPlate,100,10%
+/LargeTube,10,2%
+/Medical,15,0.1%,,MedicalComponent
+/MetalGrid,20,2%
+/Motor,20,4%,,MotorComponent
+/PowerCell,20,1%
+/RadioCommunication,10,0.5%,RadioComm,RadioCommunicationComponent
+/Reactor,25,2%,,ReactorComponent
+/SmallTube,50,3%
+/SolarCell,20,0.1%
+/SteelPlate,150,40%
+/Superconductor,10,1%
+/Thrust,15,5%,,ThrustComponent
+/Canvas,5,0.01%
 
 GasContainerObject/
 /HydrogenBottle
-
 Ingot/
 /Cobalt,50,3.5%
 /Gold,5,0.2%
 /Iron,200,88%
-/Magnesium,5,0.1%,,Gunpowder
+/Magnesium,5,0.1%
 /Nickel,30,1.5%
 /Platinum,5,0.1%
 /Silicon,50,2%
 /Silver,20,1%
 /Stone,50,2.5%
 /Uranium,1,0.1%
-/Polymer,50,10%
-/Aluminum,200,88%
-/Copper,200,88%
-/Titanium,200,88%
-/Lithium,200,88%
 
 Ore/
-/CrushedCobalt
-/PurifiedCobalt
 /Cobalt
-/CrushedGold
-/PurifiedGold
 /Gold
 /Ice
-/CrushedIron
-/PurifiedIron
 /Iron
-/CrushedNiter
-/PurifiedNiter
-/Niter
-/CrushedNickel
-/PurifiedNickel
+/Magnesium
 /Nickel
-/CrushedPlatinum
-/PurifiedPlatinum
 /Platinum
 /Scrap
-/CrushedSilicon
-/PurifiedSilicon
 /Silicon
-/CrushedSilver
-/PurifiedSilver
 /Silver
 /Stone
-/CrushedUranium
-/PurifiedUranium
 /Uranium
-/Oil-Sand
-/CrudeOil,50,10%
-/CrushedBauxite
-/PurifiedBauxite
-/Bauxite
 
 OxygenContainerObject/
 /OxygenBottle
@@ -220,6 +171,7 @@ PhysicalGunObject/
 
         // Ore subtypes which refine into Ingots with a different subtype name, or
         // which cannot be refined at all (if set to "").
+        //TODO: Save this to Custom Data
         static readonly Dictionary<string, string> ORE_PRODUCT = new Dictionary<string, string>
         {
             // vanilla products
@@ -232,12 +184,10 @@ PhysicalGunObject/
             {"PORPHYRY", "GOLD"}, {"SPERRYLITE", "PLATINUM"}, {"NIGGLIITE", "PLATINUM"}, {"GALENA", "SILVER"}, {"CHLORARGYRITE", "SILVER"},
             {"COOPERITE", "PLATINUM"}, {"PETZITE", "SILVER"}, {"HAPKEITE", "SILICON"}, {"DOLOMITE", "MAGNESIUM"}, {"SINOITE", "SILICON"},
             {"OLIVINE", "MAGNESIUM"}, {"QUARTZ", "SILICON"}, {"AKIMOTOITE", "MAGNESIUM"}, {"WADSLEYITE", "MAGNESIUM"}, {"CARNOTITE", "URANIUM"},
-            {"AUTUNITE", "URANIUM"}, {"URANIAURITE", "GOLD"},
-
-            // Industrial Overhaul
-            {"BAUXITE", "ALUMINUM"},
-            {"CRUDEOIL", "POLYMER"}
+            {"AUTUNITE", "URANIUM"}, {"URANIAURITE", "GOLD"}
         };
+
+        static Dictionary<string, string> itemGroups = new Dictionary<string, string>();
 
         // Block types/subtypes which restrict item types/subtypes from their first
         // inventory. Missing or "*" subtype indicates all subtypes of the given type.
@@ -567,6 +517,7 @@ PhysicalGunObject/
             get { return totalRunTime / totalExecutionCount; }
         }
 
+        List<double> LongestStepExecutionTime = new List<double>();
         /// <summary>
         /// The current percent load of the call.
         /// </summary>
@@ -725,6 +676,11 @@ PhysicalGunObject/
         #endregion
 
         #region Entry Points
+                
+        public void Save()
+        {
+            //TODO: Save Program State
+        }
 
         public Program()
         {
@@ -752,6 +708,10 @@ PhysicalGunObject/
                 ProcessStepScanProduction,        // 11: scan all production blocks and handle them
                 ProcessStepUpdateInventoryPanels, // 12: update all inventory panels
             };
+            for (int i = 0; i < processSteps.Length; i++)
+            {
+                LongestStepExecutionTime.Add(0);
+            }
 
             // initialize panel data
             int unused;
@@ -769,10 +729,14 @@ PhysicalGunObject/
 
             // initialize default items, quotas, labels and blueprints
             // (TIM can also learn new items it sees in inventory)
+
+            //TODO: Update Code to use Custom Data (used for args now)
+
             InitItems(DEFAULT_ITEMS);
 
             // initialize block:item restrictions
             // (TIM can also learn new restrictions whenever item transfers fail)
+            //TODO: Include Both Items and Restrictions in custom data
             InitBlockRestrictions(DEFAULT_RESTRICTIONS);
 
             // Set run frequency
@@ -865,7 +829,12 @@ PhysicalGunObject/
                 do
                 {
                     debugText.Add(string.Format("> Doing step {0}", processStep));
+                    var start = currentExecutionStartTime;
+                    currentExecutionStartTime = DateTime.Now;
                     processSteps[processStep]();
+                    var time = ExecutionTime;
+                    LongestStepExecutionTime[processStep] = Math.Max(LongestStepExecutionTime[processStep], time);
+                    currentExecutionStartTime = start;
                     processStep++;
                     didAtLeastOneProcess = true;
                 } while (processStep < processSteps.Length && DoExecutionLimitCheck());
@@ -928,6 +897,9 @@ PhysicalGunObject/
                 stepText, exTime, exLoad, Runtime.CurrentInstructionCount));
             Echo(msg = string.Format("Average Execution Time: {0}ms",
                 aTime));
+            for (var i = 0; i < LongestStepExecutionTime.Count; i++) {
+                Echo(msg = string.Format("Longest Runtime on Step {0}: {1}ms", i, LongestStepExecutionTime[i]));
+            }
             debugText.Add(msg);
             UpdateStatusPanels();
         }
@@ -1787,7 +1759,7 @@ PhysicalGunObject/
                         panel2 = slim != null ? slim.FatBlock as IMyTextPanel : null;
                         if (panel2 != null && "" + panel2.BlockDefinition == "" + panel.BlockDefinition & panel2.GetPublicTitle().ToUpper().Contains("QUOTAS"))
                         {
-                            spanLines[x] = panel2.GetPublicText().Split('\n');
+                            spanLines[x] = panel2.GetText().Split('\n');
                             height = Math.Max(height, spanLines[x].Length);
                         }
                     }
@@ -2005,8 +1977,7 @@ PhysicalGunObject/
                             egg = false;
                             blkPnl.SetValueFloat("FontSize", 0.2f);
                             blkPnl.WritePublicTitle("TIM the Enchanter");
-                            //blkPnl.WritePublicText(panelFiller, false);
-                            blkPnl.ShowPublicTextOnScreen();
+                            //blkPnl.WriteText(panelFiller, false);
                             name.Append("THE ENCHANTER ");
                         }
                         else if (attr.Length >= 3 & "QUOTAS".StartsWith(attr))
@@ -3236,7 +3207,7 @@ PhysicalGunObject/
                     }
                 }
                 sf.SetWidth(3, ScreenFormatter.GetWidth("8.88" + (maxamt >= 1000000000000L ? " M" : maxamt >= 1000000000L ? " K" : ""), true));
-                sf.SetWidth(5, ScreenFormatter.GetWidth("8.88" + (maxqta >= 1000000000000L ? " M" : maxqta >= 1000000000L ? " K" : ""), true));
+                sf.SetWidth(5, ScreenFormatter.GetWidth("8.88" + (maxqta >= 1000000000000L ? " M" : maxqta >= 1000000000L ? " K" : ""), true));                
                 foreach (IMyTextPanel panel in panels)
                     WriteTableToPanel("TIM Inventory", sf, panel);
             }
@@ -3260,8 +3231,7 @@ PhysicalGunObject/
                     panel.WritePublicTitle("Script Status");
                     if (panelSpan.ContainsKey(panel))
                         debugText.Add("Status panels cannot be spanned");
-                    panel.WritePublicText(sb.ToString());
-                    panel.ShowPublicTextOnScreen();
+                    panel.WriteText(sb.ToString());
                 }
             }
 
@@ -3277,8 +3247,7 @@ PhysicalGunObject/
                     panel.WritePublicTitle("Script Debugging");
                     if (panelSpan.ContainsKey(panel))
                         debugText.Add("Debug panels cannot be spanned");
-                    panel.WritePublicText(String.Join("\n", debugText));
-                    panel.ShowPublicTextOnScreen();
+                    panel.WriteText(String.Join("\n", debugText));
                 }
             }
             blockErrors.Clear();
@@ -3347,9 +3316,9 @@ PhysicalGunObject/
                             if (x == 0)
                                 text += y == 0 ? before : y + 1 == spany ? after : "";
                             spanpanel.SetValueFloat("FontSize", fontsize);
+                            spanpanel.SetValueFloat("Padding", 0);
                             spanpanel.WritePublicTitle(title + " (" + (x + 1) + "," + (y + 1) + ")");
-                            spanpanel.WritePublicText(text);
-                            spanpanel.ShowPublicTextOnScreen();
+                            spanpanel.WriteText(text);
                         }
                         r += height;
                     }
@@ -3358,9 +3327,9 @@ PhysicalGunObject/
             else
             {
                 panel.SetValueFloat("FontSize", fontsize);
+                panel.SetValueFloat("Padding", 0);
                 panel.WritePublicTitle(title);
-                panel.WritePublicText(before + sf.ToString(width) + after);
-                panel.ShowPublicTextOnScreen();
+                panel.WriteText(before + sf.ToString(width) + after);
             }
         }
 
