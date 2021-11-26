@@ -24,7 +24,7 @@ namespace Scripts.TIM
         /*-*/
         /*
 Taleden's Inventory Manager - Updated (Unofficial)
-version 1.8.1 (2021-04-12)
+version 1.8.2 (2021-11-26)
 
 Unoffical maintained version of TIM.
 
@@ -222,11 +222,11 @@ PhysicalGunObject/
         #region Version
 
         // current script version
-        const int VERSION_MAJOR = 1, VERSION_MINOR = 8, VERSION_REVISION = 1;
+        const int VERSION_MAJOR = 1, VERSION_MINOR = 8, VERSION_REVISION = 2;
         /// <summary>
         /// Current script update time.
         /// </summary>
-        const string VERSION_UPDATE = "2021-04-12";
+        const string VERSION_UPDATE = "2021-11-26";
         /// <summary>
         /// A formatted string of the script version.
         /// </summary>
@@ -3316,7 +3316,7 @@ PhysicalGunObject/
                             if (x == 0)
                                 text += y == 0 ? before : y + 1 == spany ? after : "";
                             spanpanel.SetValueFloat("FontSize", fontsize);
-                            spanpanel.SetValueFloat("Padding", 0);
+                            //spanpanel.SetValueFloat("Padding", 0);
                             spanpanel.WritePublicTitle(title + " (" + (x + 1) + "," + (y + 1) + ")");
                             spanpanel.WriteText(text);
                         }
@@ -3327,7 +3327,7 @@ PhysicalGunObject/
             else
             {
                 panel.SetValueFloat("FontSize", fontsize);
-                panel.SetValueFloat("Padding", 0);
+                //panel.SetValueFloat("Padding", 0f);
                 panel.WritePublicTitle(title);
                 panel.WriteText(before + sf.ToString(width) + after);
             }
