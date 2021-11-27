@@ -44,6 +44,9 @@
     <Reference Include="SpaceEngineers.Game">
       <HintPath>..\gamelibs\SpaceEngineers.Game.dll</HintPath>
     </Reference>
+    <Reference Include="SpaceEngineers.ObjectBuilders">
+      <HintPath>..\gamelibs\SpaceEngineers.ObjectBuilders.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
