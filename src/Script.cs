@@ -87,6 +87,9 @@ that any changes will be reverted when you update the script from the workshop.
         // are based on material requirements for various blueprints (some built in to
         // the game, some from the community workshop).
         const string DEFAULT_ITEMS = @"
+Datapad/
+/Datapad
+
 AmmoMagazine/
 /Missile200mm
 /NATO_25x184mm,,,,NATO_25x184mmMagazine
@@ -618,7 +621,7 @@ PhysicalGunObject/
             /// <param name="ratio"></param>
             /// <param name="label"></param>
             /// <param name="blueprint"></param>
-            public static void InitItem(string itemType, string itemSubType, long minimum = 0L, float ratio = 0.0f, string label = "", string blueprint = "")
+            public static bool InitItem(string itemType, string itemSubType, long minimum = 0L, float ratio = 0.0f, string label = "", string blueprint = "")
             {
                 string itypelabel = itemType, isublabel = itemSubType;
                 itemType = itemType.ToUpper();
@@ -653,7 +656,9 @@ PhysicalGunObject/
                     {
                         blueprintItem[typeSubData[itemType][itemSubType].blueprint] = new ItemId(itemType, itemSubType);
                     }
+                    return true;
                 }
+                return false;
             }
 
             private InventoryItemData(string isub, long minimum, float ratio, string label, string blueprint)
@@ -1639,8 +1644,11 @@ PhysicalGunObject/
                         itype = itype.Substring(itype.LastIndexOf('_') + 1);
                         isub = stacks[s].Type.SubtypeId;
 
-                        // new type or subtype?
-                        InventoryItemData.InitItem(itype, isub, 0L, 0.0f, stacks[s].Type.SubtypeId, null);
+                        // new type or subtype?                        
+                        if (InventoryItemData.InitItem(itype, isub, 0L, 0.0f, stacks[s].Type.SubtypeId, null) == true)
+                        {
+                            debugText.Add("FoundNewItem: " + itype + "/" + isub);
+                        }
                         itype = itype.ToUpper();
                         isub = isub.ToUpper();
                         if (!typeXRef.ContainsKey(stacks[s].ItemId))
@@ -2071,14 +2079,15 @@ PhysicalGunObject/
                             bool negate = false;
                             while (++i < fields.Length)
                             {
-                                if (fields[i] == "-")
+                                if (fields[i].StartsWith("-"))
                                 {
                                     negate = true;
                                     name.Append(":-");
+                                    fields[i] = fields[i].Substring(1);                                    
                                 }
                                 if (ParseItemTypeSub(null, true, fields[i], blkRfn != null ? "ORE" : "", out itype, out isub) & blkRfn != null == (itype == "ORE") & (blkRfn != null | itype != "INGOT"))
                                 {
-                                    if (negate || isub == "")
+                                    if (isub == "")
                                     {
                                         if (blkRfn != null)
                                         {
@@ -2089,7 +2098,7 @@ PhysicalGunObject/
                                             foreach (string s in typeSubs[itype])
                                                 autoitems.Add(new ItemId(itype, s));
                                         }
-                                        name.Append(":" + typeLabel[itype]);
+                                        name.Append((negate ? "" : ":") + typeLabel[itype]);
                                     }
                                     else
                                     {
@@ -2115,14 +2124,15 @@ PhysicalGunObject/
                                                 autoitems.Add(new ItemId(itype, isub));
                                             }
                                         }
-                                        name.Append(":" + (blkRfn == null & subTypes[isub].Count > 1 ? typeLabel[itype] + "/" : "") + subLabel[isub]);
+                                        name.Append((negate ? "" : ":") + (blkRfn == null & subTypes[isub].Count > 1 ? typeLabel[itype] + "/" : "") + subLabel[isub]);
                                     }
                                 }
                                 else
                                 {
-                                    name.Append(":" + fields[i].ToLower());
+                                    name.Append((negate ? "" : ":") + fields[i].ToLower());
                                     debugText.Add("Unrecognized or ambiguous item: " + fields[i].ToLower());
                                 }
+                                negate = false;
                             }
                             if (blkRfn != null)
                             {
@@ -2353,7 +2363,6 @@ PhysicalGunObject/
                 if (mysubs.Count == 1)
                     isub = mysubs.First();
             }
-
             return found == 1;
         }
 
@@ -2785,6 +2794,21 @@ PhysicalGunObject/
 
         #region Production Management
 
+
+        bool FuzzyGetValue(string isub, out string isubIngot)
+        {
+            var psub = isub;
+            foreach (var key in ORE_PRODUCT.Keys)
+            {
+                if (isub.Contains(key))
+                {
+                    psub = key;
+                    debugText.Add(isub);
+                }
+            }
+            return ORE_PRODUCT.TryGetValue(psub, out isubIngot);
+        }
+
         void ScanProduction()
         {
             List<IMyTerminalBlock> blocks1 = new List<IMyTerminalBlock>(), blocks2 = new List<IMyTerminalBlock>();
@@ -2808,8 +2832,8 @@ PhysicalGunObject/
                     isub = stacks[0].Type.SubtypeId.ToUpper();
                     if (typeSubs.ContainsKey(itype) & subTypes.ContainsKey(isub))
                         typeSubData[itype][isub].producers.Add(blk);
-                    if (itype == "ORE" & (ORE_PRODUCT.TryGetValue(isub, out isubIng) ? isubIng : isubIng = isub) != "" & typeSubData["INGOT"].ContainsKey(isubIng))
-                        typeSubData["INGOT"][isubIng].producers.Add(blk);
+                    if (itype == "ORE" & (FuzzyGetValue(isub, out isubIng) ? isubIng : isubIng = isub) != "" & typeSubData["INGOT"].ContainsKey(isubIng))
+                        typeSubData["INGOT"][isubIng].producers.Add(blk);                    
                     producerWork[blk] = new ProducerWork(new ItemId(itype, isub), (double)stacks[0].Amount);
                 }
             }
@@ -2877,7 +2901,7 @@ PhysicalGunObject/
             // scan inventory levels
             foreach (string isubOre in typeSubs["ORE"])
             {
-                if (!ORE_PRODUCT.TryGetValue(isubOre, out isubIngot))
+                if (!FuzzyGetValue(isubOre, out isubIngot))
                     isubIngot = isubOre;
                 if (isubIngot != "" & typeSubData["ORE"][isubOre].avail > 0L & typeSubData["INGOT"].TryGetValue(isubIngot, out data))
                 {
@@ -2946,8 +2970,8 @@ PhysicalGunObject/
                 ores.Sort((o1, o2) =>
                 {
                     string i1, i2;
-                    if (!ORE_PRODUCT.TryGetValue(o1, out i1)) i1 = o1;
-                    if (!ORE_PRODUCT.TryGetValue(o2, out i2)) i2 = o2;
+                    if (!FuzzyGetValue(o1, out i1)) i1 = o1;
+                    if (!FuzzyGetValue(o2, out i2)) i2 = o2;
                     return -1 * typeSubData["INGOT"][i1].quota.CompareTo(typeSubData["INGOT"][i2].quota);
                 });
                 refineries.Sort((r1, r2) => refineryOres[r1].Count.CompareTo(refineryOres[r2].Count));
