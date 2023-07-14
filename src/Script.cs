@@ -24,7 +24,7 @@ namespace Scripts.TIM
         /*-*/
         /*
 Taleden's Inventory Manager - Updated (Unofficial)
-version 1.8.2 (2021-11-26)
+version 1.8.3 (2023-07-14)
 
 Unoffical maintained version of TIM.
 
@@ -225,11 +225,11 @@ PhysicalGunObject/
         #region Version
 
         // current script version
-        const int VERSION_MAJOR = 1, VERSION_MINOR = 8, VERSION_REVISION = 2;
+        const int VERSION_MAJOR = 1, VERSION_MINOR = 8, VERSION_REVISION = 3;
         /// <summary>
         /// Current script update time.
         /// </summary>
-        const string VERSION_UPDATE = "2021-11-26";
+        const string VERSION_UPDATE = "2023-07-14";
         /// <summary>
         /// A formatted string of the script version.
         /// </summary>
@@ -611,6 +611,7 @@ PhysicalGunObject/
             public Dictionary<IMyInventory, int> invenSlot;
             public HashSet<IMyFunctionalBlock> producers;
             public Dictionary<string, double> prdSpeed;
+            public string humanReadableSubType;
 
             /// <summary>
             /// Initialises the item with base data.
@@ -652,6 +653,7 @@ PhysicalGunObject/
                     typeSubs[itemType].Add(itemSubType);
                     subTypes[itemSubType].Add(itemType);
                     typeSubData[itemType][itemSubType] = new InventoryItemData(itemSubType, minimum, ratio, label == "" ? isublabel : label, blueprint == "" ? isublabel : blueprint);
+                    typeSubData[itemType][itemSubType].humanReadableSubType = isublabel;
                     if (blueprint != null)
                     {
                         blueprintItem[typeSubData[itemType][itemSubType].blueprint] = new ItemId(itemType, itemSubType);
@@ -681,11 +683,6 @@ PhysicalGunObject/
         #endregion
 
         #region Entry Points
-                
-        public void Save()
-        {
-            //TODO: Save Program State
-        }
 
         public Program()
         {
@@ -736,8 +733,14 @@ PhysicalGunObject/
             // (TIM can also learn new items it sees in inventory)
 
             //TODO: Update Code to use Custom Data (used for args now)
-
-            InitItems(DEFAULT_ITEMS);
+            string[] args = Me.CustomData.Split('|');
+            string items = DEFAULT_ITEMS;
+            if (args.Length > 1)
+            {
+                //TODO: Enable Reading items from custom data when serializer is verified
+                items = args[1];
+            }
+            InitItems(items);
 
             // initialize block:item restrictions
             // (TIM can also learn new restrictions whenever item transfers fail)
@@ -907,6 +910,8 @@ PhysicalGunObject/
             }
             debugText.Add(msg);
             UpdateStatusPanels();
+
+            SaveData();
         }
 
         #endregion
@@ -971,7 +976,7 @@ PhysicalGunObject/
 
             string arg, value;
             bool hasValue;
-            foreach (System.Text.RegularExpressions.Match match in argParseRegex.Matches(Me.CustomData))
+            foreach (System.Text.RegularExpressions.Match match in argParseRegex.Matches(Me.CustomData.Split('|')[0]))
             {
                 arg = match.Groups[1].Value.ToLower();
                 hasValue = match.Groups[2].Success;
@@ -2698,7 +2703,7 @@ PhysicalGunObject/
                 {
                     avail = Math.Min(data.invenTotal[amtInven], amount);
                     moved = 0L;
-                    if (avail > 0L & invenLocked.Contains(amtInven) == false)
+                    if (avail > 0L && invenLocked.Contains(amtInven) == false && ((amtInven.Owner as IMyAssembler) == null || typeSubData[itype][isub].blueprint != default(MyDefinitionId)))
                     {
                         moved = TransferItem(itype, isub, avail, amtInven, reqInven);
                         amount -= moved;
@@ -2851,29 +2856,41 @@ PhysicalGunObject/
                         producerWork[blk] = new ProducerWork(item, (double)queue[0].Amount - blk.CurrentProgress);
                     } else
                     {
-                        /*
-                        //New Blueprint, lets learn it!                        
-                        
-                        item = typeXRef[queue[0].ItemId];
-                        var data = typeSubData[item.type][item.subType];
 
-                        if (data.blueprint != null)
+                        //New Blueprint, lets learn it!                        
+                        debugText.Add("id: " + queue[0].ItemId);                        
+                        var _item = blk.OutputInventory.GetItemAt(0);
+                        debugText.Add("item:" + _item.HasValue);
+                        if (_item.HasValue)
                         {
-                            debugText.Add("Overwriting Existing blueprint: " + data.blueprint.SubtypeName + " with " + queue[0].BlueprintId.SubtypeName);
-                        } else
-                        {
-                            debugText.Add("New Blueprint: " + queue[0].BlueprintId.SubtypeName);
-                        }
-                        data.blueprint = queue[0].BlueprintId;
-                        blueprintItem.Add(data.blueprint, item);
-                        if (data.minimum == 0)
-                        {
-                            data.minimum = 50;
-                            data.ratio = 0.05f;
-                            EchoR(item.subType);
-                            throw new Exception("Die");
-                        }*/
-                        
+                            string typeid = _item.Value.Type.TypeId;
+                            typeid = typeid.Substring(typeid.LastIndexOf('_') + 1).ToUpper();
+                            string subtypeid = _item.Value.Type.SubtypeId.ToUpper();
+                            debugText.Add("Type: " + typeid + " SubType: " + subtypeid);
+                            item = new ItemId(typeid, subtypeid);
+                            if (typeSubData.ContainsKey(item.type) && typeSubData[item.type].ContainsKey(item.subType))
+                            {
+                                var data = typeSubData[item.type][item.subType];
+
+                                if (data.blueprint != default(MyDefinitionId))
+                                {
+                                    debugText.Add("Alternate Blueprint Found: replace " + data.blueprint.SubtypeName + " with " + queue[0].BlueprintId.SubtypeName + "?");
+                                }
+                                else
+                                {
+                                    debugText.Add("New Blueprint: " + queue[0].BlueprintId.SubtypeName + " for " + item.type + "/" + item.subType);
+                                    
+                                    data.blueprint = queue[0].BlueprintId;
+                                    blueprintItem.Add(data.blueprint, item);
+                                    data.minimum = 50;
+                                    data.ratio = 0.005f;
+                                    EchoR(item.subType + " " + data.amount);
+                                }
+                            } else
+                            {
+                                debugText.Add("Item not registered! " + item.type + "/" + item.subType + " Blueprint: " + queue[0].BlueprintId.SubtypeName);
+                            }
+                        }                        
                     }
                 }
             }
@@ -3745,6 +3762,30 @@ PhysicalGunObject/
 
         }
 
+        #endregion
+        
+        #region Save Data
+        public void SaveData()
+        {
+            string itemData = "";
+            foreach (var item in typeSubData.Keys)
+            {
+                itemData += typeLabel[item] + "/\n";
+                foreach (var sub in typeSubData[item].Keys)
+                {
+                    var data = typeSubData[item][sub];
+                    itemData += "/" + typeSubData[item][sub].humanReadableSubType;
+                    itemData += "," + (data.minimum != 0 ? data.minimum.ToString() : "");
+                    itemData += "," + (data.ratio != 0 ? data.ratio * 100 + "%" : "");
+                    itemData += "," + ((data.label != null && data.label.ToUpper() != sub) ? data.label : "");
+                    itemData += "," + ((data.blueprint != default(MyDefinitionId) && data.blueprint.SubtypeName.ToUpper() != sub) ? data.blueprint.SubtypeName : "");
+                    itemData += "\n";
+                }
+                itemData += "\n";
+            }
+            string[] args = Me.CustomData.Split('|');
+            Me.CustomData = args[0] + "|\n" + itemData;
+        }
         #endregion
         /*m*/
         /*-*/
