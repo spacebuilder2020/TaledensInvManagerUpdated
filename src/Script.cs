@@ -91,9 +91,27 @@ Datapad/
 /Datapad
 
 AmmoMagazine/
-/Missile200mm
-/NATO_25x184mm,,,,NATO_25x184mmMagazine
-/NATO_5p56x45mm,,,,NATO_5p56x45mmMagazine
+/Missile200mm,,,,Position0100_Missile200mm
+/NATO_25x184mm,,,,Position0080_NATO_25x184mmMagazine
+/FlareClip,,,,Position0051_FlareGunMagazine
+/FireworksBoxBlue,,,,Position0060_FireworksBoxBlue
+/FireworksBoxGreen,,,,Position0061_FireworksBoxGreen
+/FireworksBoxRed,,,,Position0062_FireworksBoxRed
+/FireworksBoxYellow,,,,Position0063_FireworksBoxYellow
+/FireworksBoxPink,,,,Position0064_FireworksBoxPink
+/FireworksBoxRainbow,,,,Position0065_FireworksBoxRainbow
+/SemiAutoPistolMagazine,,,,Position0010_SemiAutoPistolMagazine
+/AutomaticRifleGun_Mag_20rd,,,,Position0040_AutomaticRifleGun_Mag_20rd
+/FullAutoPistolMagazine,,,,Position0020_FullAutoPistolMagazine
+/ElitePistolMagazine,,,,Position0030_ElitePistolMagazine
+/RapidFireAutomaticRifleGun_Mag_50rd,,,,Position0050_RapidFireAutomaticRifleGun_Mag_50rd
+/PreciseAutomaticRifleGun_Mag_5rd,,,,Position0060_PreciseAutomaticRifleGun_Mag_5rd
+/UltimateAutomaticRifleGun_Mag_30rd,,,,Position0070_UltimateAutomaticRifleGun_Mag_30rd
+/AutocannonClip,,,,Position0090_AutocannonClip
+/MediumCalibreAmmo,,,,Position0110_MediumCalibreAmmo
+/LargeCalibreAmmo,,,,Position0120_LargeCalibreAmmo
+/SmallRailgunAmmo,,,,Position0130_SmallRailgunAmmo
+/LargeRailgunAmmo,,,,Position0140_LargeRailgunAmmo
 
 Component/
 /BulletproofGlass,50,2%
@@ -120,7 +138,8 @@ Component/
 /Canvas,5,0.01%
 
 GasContainerObject/
-/HydrogenBottle
+/HydrogenBottle,,,,Position0020_HydrogenBottle
+
 Ingot/
 /Cobalt,50,3.5%
 /Gold,5,0.2%
@@ -148,25 +167,38 @@ Ore/
 /Uranium
 
 OxygenContainerObject/
-/OxygenBottle
+/OxygenBottle,,,,Position0010_OxygenBottle
 
 PhysicalGunObject/
-/AngleGrinderItem,,,,AngleGrinder
-/AngleGrinder2Item,,,,AngleGrinder2
-/AngleGrinder3Item,,,,AngleGrinder3
-/AngleGrinder4Item,,,,AngleGrinder4
-/AutomaticRifleItem,,,AutomaticRifle,AutomaticRifle
-/HandDrillItem,,,,HandDrill
-/HandDrill2Item,,,,HandDrill2
-/HandDrill3Item,,,,HandDrill3
-/HandDrill4Item,,,,HandDrill4
-/PreciseAutomaticRifleItem,,,PreciseAutomaticRifle,PreciseAutomaticRifle
-/RapidFireAutomaticRifleItem,,,RapidFireAutomaticRifle,RapidFireAutomaticRifle
-/UltimateAutomaticRifleItem,,,UltimateAutomaticRifle,UltimateAutomaticRifle
-/WelderItem,,,,Welder
-/Welder2Item,,,,Welder2
-/Welder3Item,,,,Welder3
-/Welder4Item,,,,Welder4
+/AngleGrinderItem,,,,Position0010_AngleGrinder
+/AngleGrinder2Item,,,,Position0020_AngleGrinder2
+/AngleGrinder3Item,,,,Position0030_AngleGrinder3
+/AngleGrinder4Item,,,,Position0040_AngleGrinder4
+/AutomaticRifleItem,,,AutomaticRifle,Position0040_AutomaticRifle
+/HandDrillItem,,,,Position0050_HandDrill
+/HandDrill2Item,,,,Position0060_HandDrill2
+/HandDrill3Item,,,,Position0070_HandDrill3
+/HandDrill4Item,,,,Position0080_HandDrill4
+/PreciseAutomaticRifleItem,,,PreciseAutomaticRifle,Position0060_PreciseAutomaticRifle
+/RapidFireAutomaticRifleItem,,,RapidFireAutomaticRifle,Position0050_RapidFireAutomaticRifle
+/UltimateAutomaticRifleItem,,,UltimateAutomaticRifle,Position0070_UltimateAutomaticRifle
+/WelderItem,,,,Position0090_Welder
+/Welder2Item,,,,Position0100_Welder2
+/Welder3Item,,,,Position0110_Welder3
+/Welder4Item,,,,Position0120_Welder4
+/FlareGunItem,,,,Position0050_FlareGun
+/SemiAutoPistolItem,,,,Position0010_SemiAutoPistol
+/FullAutoPistolItem,,,,Position0020_FullAutoPistol
+/ElitePistolItem,,,,Position0030_EliteAutoPistol
+/BasicHandHeldLauncherItem,,,,Position0080_BasicHandHeldLauncher
+/AdvancedHandHeldLauncherItem,,,,Position0090_AdvancedHandHeldLauncher
+
+ConsumableItem/
+/Powerkit,50,0.5%,,Position0022_Powerkit
+/Medkit,50,0.5%,,Position0021_Medkit
+
+PhysicalObject/
+/SpaceCredit
 ";
 
         // Item types which may have quantities which are not whole numbers.
@@ -627,6 +659,11 @@ PhysicalGunObject/
                 string itypelabel = itemType, isublabel = itemSubType;
                 itemType = itemType.ToUpper();
                 itemSubType = itemSubType.ToUpper();
+
+                if (blueprint == "null" || blueprint == "-")
+                {
+                    blueprint = null;
+                }
 
                 // new type?
                 if (!typeSubs.ContainsKey(itemType))
@@ -1101,6 +1138,19 @@ PhysicalGunObject/
             {
                 debugText.Add("Arguments changed, re-processing...");
                 ProcessScriptArgs();
+
+                string[] args = Me.CustomData.Split('|');
+                if (args.Length > 1)
+                {
+                    string items = args[1];
+
+                    typeSubs.Clear();
+                    subTypes.Clear();
+                    typeSubData.Clear();
+                    blueprintItem.Clear();
+                    
+                    InitItems(items);
+                }
                 completeArguments = Me.CustomData;
             }
         }
@@ -2858,16 +2908,20 @@ PhysicalGunObject/
                     {
 
                         //New Blueprint, lets learn it!                        
-                        debugText.Add("id: " + queue[0].ItemId);                        
+                        //debugText.Add("id: " + queue[0].ItemId);                        
                         var _item = blk.OutputInventory.GetItemAt(0);
-                        debugText.Add("item:" + _item.HasValue);
-                        if (_item.HasValue)
+                        //debugText.Add("item:" + _item.HasValue);
+                        //Only try to learn if the assembler has been cleaned out
+                        //This is to avoid learning the wrong recipe
+                        if (_item.HasValue && blk.OutputInventory.ItemCount == 1)
                         {
                             string typeid = _item.Value.Type.TypeId;
                             typeid = typeid.Substring(typeid.LastIndexOf('_') + 1).ToUpper();
                             string subtypeid = _item.Value.Type.SubtypeId.ToUpper();
                             debugText.Add("Type: " + typeid + " SubType: " + subtypeid);
+                            //debugText.Add("id: " + _item.Value.ItemId);
                             item = new ItemId(typeid, subtypeid);
+                            
                             if (typeSubData.ContainsKey(item.type) && typeSubData[item.type].ContainsKey(item.subType))
                             {
                                 var data = typeSubData[item.type][item.subType];
@@ -2885,6 +2939,8 @@ PhysicalGunObject/
                                     data.minimum = 50;
                                     data.ratio = 0.005f;
                                     EchoR(item.subType + " " + data.amount);
+
+                                    //TODO: Queue and verify a blueprint
                                 }
                             } else
                             {
@@ -3766,7 +3822,7 @@ PhysicalGunObject/
         
         #region Save Data
         public void SaveData()
-        {
+        {            
             string itemData = "";
             foreach (var item in typeSubData.Keys)
             {
@@ -3775,16 +3831,20 @@ PhysicalGunObject/
                 {
                     var data = typeSubData[item][sub];
                     itemData += "/" + typeSubData[item][sub].humanReadableSubType;
-                    itemData += "," + (data.minimum != 0 ? data.minimum.ToString() : "");
+                    itemData += "," + (data.minimum != 0 ? (data.minimum / 1e6).ToString() : "");
                     itemData += "," + (data.ratio != 0 ? data.ratio * 100 + "%" : "");
-                    itemData += "," + ((data.label != null && data.label.ToUpper() != sub) ? data.label : "");
-                    itemData += "," + ((data.blueprint != default(MyDefinitionId) && data.blueprint.SubtypeName.ToUpper() != sub) ? data.blueprint.SubtypeName : "");
+                    itemData += "," + ((data.label != null && data.label.ToUpper() != sub.ToUpper()) ? data.label : "");
+                    itemData += "," + ((data.blueprint != default(MyDefinitionId)) ? ((data.blueprint.SubtypeName.ToUpper() != sub.ToUpper()) ? data.blueprint.SubtypeName : "") : "-");
                     itemData += "\n";
                 }
                 itemData += "\n";
             }
             string[] args = Me.CustomData.Split('|');
-            Me.CustomData = args[0] + "|\n" + itemData;
+            if (Me.CustomData == completeArguments)
+            {
+                Me.CustomData = args[0] + "|\n" + itemData;
+                completeArguments = Me.CustomData;
+            }
         }
         #endregion
         /*m*/
