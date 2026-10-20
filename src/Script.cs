@@ -24,7 +24,7 @@ namespace Scripts.TIM
         /*-*/
         /*
 Taleden's Inventory Manager - Updated (Unofficial)
-version 1.8.3 (2023-07-14)
+version 1.8.4 (2026-10-20)
 
 Unoffical maintained version of TIM.
 
@@ -257,11 +257,11 @@ PhysicalObject/
         #region Version
 
         // current script version
-        const int VERSION_MAJOR = 1, VERSION_MINOR = 8, VERSION_REVISION = 3;
+        const int VERSION_MAJOR = 1, VERSION_MINOR = 8, VERSION_REVISION = 4;
         /// <summary>
         /// Current script update time.
         /// </summary>
-        const string VERSION_UPDATE = "2023-07-14";
+        const string VERSION_UPDATE = "2026-10-20";
         /// <summary>
         /// A formatted string of the script version.
         /// </summary>
