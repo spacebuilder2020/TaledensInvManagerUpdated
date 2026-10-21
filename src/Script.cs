@@ -59,7 +59,7 @@ update, and the maximum load of each call before deferring execution to the next
         // (if USE_REAL_TIME == false, this is ignored)
         const int UPDATE_REAL_TIME = 250;
 
-        // How less will the script one if a player is not in a seat. Ignored if USE_REAL_TIME is false.
+        // How less will the script run if a player is not in a seat. Ignored if USE_REAL_TIME is false.
         const int SLOW_DOWN_RATE = 4;
 
         // How many cycles should we skip at first run before starting the program
@@ -1257,6 +1257,7 @@ PhysicalObject/
             ScanBlocks<IMyGasGenerator>();
             ScanBlocks<IMyGasTank>();
             ScanBlocks<IMyOxygenFarm>(); // scan oxygen farm to allow nanite support
+            ScanBlocks<IMyFunctionalBlock>("AlgaeFarm"); //Algae Farms are functional blocks, but we only want AlgaeFarms
             ScanBlocks<IMyReactor>();
             ScanBlocks<IMyRefinery>();
             ScanBlocks<IMyShipConnector>();
@@ -1667,7 +1668,7 @@ PhysicalObject/
             }
         }
 
-        void ScanBlocks<T>() where T : class
+        void ScanBlocks<T>(string typeid = "*") where T : class
         {
             List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
             System.Text.RegularExpressions.Match match;
@@ -1678,7 +1679,10 @@ PhysicalObject/
             InventoryItemData data;
             long amount, total;
 
-            GridTerminalSystem.GetBlocksOfType<T>(blocks);
+            GridTerminalSystem.GetBlocksOfType<T>(blocks, (IMyTerminalBlock block) =>
+            {
+                return typeid == "*" || block.BlockDefinition.SubtypeId.Contains(typeid);
+            });
             foreach (IMyTerminalBlock block in blocks)
             {
                 if (!dockedgrids.Contains(block.CubeGrid))
