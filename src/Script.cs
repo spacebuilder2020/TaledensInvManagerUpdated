@@ -136,6 +136,15 @@ Component/
 /Superconductor,10,1%
 /Thrust,15,5%,,ThrustComponent
 /Canvas,5,0.01%
+/PrototechScrap
+/PrototechFrame
+/PrototechPanel
+/PrototechCapacitor
+/PrototechPropulsionUnit
+/PrototechMachinery
+/PrototechCircuitry
+/PrototechCoolingUnit
+
 
 GasContainerObject/
 /HydrogenBottle,,,,Position0020_HydrogenBottle
