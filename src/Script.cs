@@ -196,9 +196,42 @@ PhysicalGunObject/
 ConsumableItem/
 /Powerkit,50,0.5%,,Position0022_Powerkit
 /Medkit,50,0.5%,,Position0021_Medkit
+/MammalMeatRaw,,,,-
+/MammalMeatCooked,,,,Position0010_CookMammalMeat
+/InsectMeatRaw,,,,-
+/InsectMeatCooked,,,,Position0020_CookSpiderMeat
+/MealPack_KelpCrisp,,,,Position0030_MealPack_KelpCrisp
+/Fruit,,,,-
+/MealPack_FruitBar,,,,Position0040_MealPack_FruitBar
+/Vegetables,,,,-
+/MealPack_GardenSlaw,,,,Position0050_MealPack_GardenSlaw
+/MealPack_RedPellets,,,,Position0060_MealPack_RedPellets
+/MealPack_Chili,,,,Position0070_MealPack_Chili
+/MealPack_Flatbread,,,,Position0080_MealPack_Flatbread
+/MealPack_Ramen,,,,Position0090_MealPack_Ramen
+/MealPack_FruitPastry,,,,Position0100_MealPack_FruitPastry
+/Mushrooms,,,,-
+/MealPack_VeggieBurger,,,,Position0110_MealPack_VeggieBurger
+/MealPack_Curry,,,,Position0120_MealPack_Curry
+/MealPack_GreenPellets,,,,Position0130_MealPack_GreenPellets
+/MealPack_Dumplings,,,,Position0140_MealPack_Dumplings
+/MealPack_Spaghetti,,,,Position0150_MealPack_Spaghetti
+/MealPack_Lasagna,,,,Position0160_MealPack_Lasagna
+/MealPack_Burrito,,,,Position0170_MealPack_Burrito
+/MealPack_FrontierStew,,,,Position0180_MealPack_FrontierStew
+/MealPack_SearedSabiroid,,,,Position0190_MealPack_SearedSabiroid
+/MealPack_SteakDinner,,,,Position0200_MealPack_SteakDinner
+
+SeedItem/
+/Fruit,,,,Position0010_Seeds_Fruit
+/Grain,,,,Position0020_Seeds_Grain
+/Vegetables,,,,Position0030_Seeds_Vegetables
+/Mushrooms,,,,Position0040_Spores_Mushrooms
 
 PhysicalObject/
-/SpaceCredit
+/SpaceCredit,,,,-
+/Algae,,,,-
+/Grain,,,,-
 ";
 
         // Item types which may have quantities which are not whole numbers.
