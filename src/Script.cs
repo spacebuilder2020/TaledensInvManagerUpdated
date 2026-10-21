@@ -24,7 +24,7 @@ namespace Scripts.TIM
         /*-*/
         /*
 Taleden's Inventory Manager - Updated (Unofficial)
-version 1.8.4 (2026-10-20)
+version 1.8.4 (2026-10-21)
 
 Unoffical maintained version of TIM.
 
@@ -292,7 +292,7 @@ PhysicalObject/
         //            Do not edit anything below
         // =================================================
         const string MOB = "MyObjectBuilder_";
-        const string NON_AMMO = "Component,GasContainerObject,Ingot,Ore,OxygenContainerObject,PhysicalGunObject\n";
+        const string NON_AMMO = "Component,GasContainerObject,Ingot,Ore,OxygenContainerObject,PhysicalGunObject,ConsumableItem,SeedItem,PhysicalObject,Datapad\n";
         /*m*/
         #region Fields
 
@@ -303,7 +303,7 @@ PhysicalObject/
         /// <summary>
         /// Current script update time.
         /// </summary>
-        const string VERSION_UPDATE = "2026-10-20";
+        const string VERSION_UPDATE = "2026-10-21";
         /// <summary>
         /// A formatted string of the script version.
         /// </summary>
